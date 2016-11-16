@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="fatal" strict="true" name="DefaultDataCenterLogConfig">
+
+  <Properties>
+    <Property name="default.layout">%d{DEFAULT} [%t] %-5level %c{1.} - %m%n%throwable</Property>
+    <Property name="file.name">logs/data-center.log</Property>
+    <Property name="file.pattern">logs/$${date:yyyy-MM}/app-%d{yyyy-MM-dd-HH}-%i.log.gz</Property>
+  </Properties>
+
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%highlight{${default.layout}}" />
+    </Console>
+
+    <RollingFile name="RollingFile" fileName="${file.name}" filePattern="${file.pattern}">
+      <PatternLayout pattern="${default.layout}" />
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="20 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="20"/>
+    </RollingFile>
+  </Appenders>
+
+  <Loggers>
+    <Logger name="com.mdedu" level="info" additivity="false">
+      <AppenderRef ref="Console"/>
+    <AppenderRef ref="RollingFile"/>
+    </Logger>
+
+
+    <Root level="error">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="RollingFile"/>
+    </Root>
+  </Loggers>
+
+</Configuration>
