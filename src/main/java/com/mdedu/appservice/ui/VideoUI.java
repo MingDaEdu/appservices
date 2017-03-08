@@ -8,6 +8,7 @@ import org.springframework.data.domain.Example;
 import com.mdedu.appservice.domainobject.Book;
 import com.mdedu.appservice.domainobject.Chapter;
 import com.mdedu.appservice.domainobject.Grade;
+import com.mdedu.appservice.domainobject.Publisher;
 import com.mdedu.appservice.domainobject.Subject;
 import com.mdedu.appservice.domainobject.Version;
 import com.mdedu.appservice.domainobject.Video;
@@ -24,6 +25,7 @@ import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.spring.annotation.SpringView;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
@@ -68,6 +70,10 @@ public class VideoUI extends HorizontalLayout implements View {
 	private Grid videoGrid = new Grid();
 	private HorizontalLayout videoView = new HorizontalLayout();
 	private VideoEditor editor;
+	
+	private Button newBtn;
+	
+	private Chapter chapter;
 
 	@Autowired
 	public VideoUI(SubjectRepository subjectRepo, GradeRepository gradeRepo, VersionRepository versionRepo,
@@ -95,15 +101,28 @@ public class VideoUI extends HorizontalLayout implements View {
 		navTree.setWidth("200px");
 		navTree.setHeight("100%");
 		books.setSizeFull();
-		
+		newBtn = new Button("新增视频");
 		videoGrid.setColumns("name","playedCount","seq","relatedSeq");
 		videoView.addComponents(videoGrid,editor);
-		mainPanel.addComponents(chLabel, videoView);
+		mainPanel.addComponents(chLabel,newBtn, videoView);
 		this.addComponents(navTree, mainPanel);
 		mainPanel.setSizeFull();
 		this.setExpandRatio(navTree, 1);
 		this.setExpandRatio(mainPanel, 3);
 		editor.setVisible(false);
+		newBtn.addClickListener(e -> editor.edit(new Video()));
+		videoGrid.addSelectionListener(e -> {
+			if (e.getSelected().isEmpty()) {
+				editor.setVisible(false);
+			} else {
+				editor.edit((Video) videoGrid.getSelectedRow());
+			}
+		});
+		editor.setChangeHandler(() -> {
+			editor.setVisible(false);
+			reloadVideoView();
+		});
+		
 		this.setSpacing(true);
 		this.setMargin(true);
 
@@ -175,12 +194,9 @@ public class VideoUI extends HorizontalLayout implements View {
 				chapterTree.addValueChangeListener((e)->{
 					if(e.getProperty().getValue()!=null){
 						Chapter ch=(Chapter)e.getProperty().getValue();
+						chapter=ch;
+						reloadVideoView();
 						
-						BeanItemContainer<Video> v =new BeanItemContainer(Video.class,
-						(Collection<Video>)videoRepo.findByChapter(ch));
-						videoGrid.setContainerDataSource(v);
-						videoView.setVisible(true);
-						chLabel.setCaption(ch.getTitle()+" 视频列表");
 					}else{
 						videoView.setVisible(false);
 					}
@@ -190,6 +206,14 @@ public class VideoUI extends HorizontalLayout implements View {
 
 	}
 
+	public void reloadVideoView(){
+		BeanItemContainer<Video> v =new BeanItemContainer(Video.class,
+				(Collection<Video>)videoRepo.findByChapter(chapter));
+				videoGrid.setContainerDataSource(v);
+				videoView.setVisible(true);
+				chLabel.setCaption(chapter.getTitle()+" 视频列表");
+				editor.setChapter(chapter);
+	}
 	@Override
 	public void enter(ViewChangeEvent event) {
 		// TODO Auto-generated method stub

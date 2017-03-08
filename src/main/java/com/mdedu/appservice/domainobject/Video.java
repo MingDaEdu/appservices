@@ -32,6 +32,13 @@ public class Video {
 	
 	@ManyToOne
 	private Chapter chapter;
+	
+	public Video(){
+		this.name="";
+		this.description="";
+		this.seq="";
+		this.relatedSeq="";
+	}
 
 	public Long getId() {
 		return id;

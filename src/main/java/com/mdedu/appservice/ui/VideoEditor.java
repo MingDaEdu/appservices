@@ -2,6 +2,7 @@ package com.mdedu.appservice.ui;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.mdedu.appservice.domainobject.Chapter;
 import com.mdedu.appservice.domainobject.Video;
 import com.mdedu.appservice.repository.VideoRepository;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
@@ -40,6 +41,8 @@ public class VideoEditor extends VerticalLayout {
 	private TextField relatedSeq = new TextField("关联编号:");
 	
 	private TextField description = new TextField("详细：");
+	
+	private Chapter chapter;
 	
 
 	@Autowired
@@ -83,9 +86,10 @@ public class VideoEditor extends VerticalLayout {
 			video = videoRepo.findOne(c.getId());
 		} else {
 			video = c;
+			video.setChapter(this.chapter);
 		}
-				BeanFieldGroup.bindFieldsUnbuffered(video, this);
-
+		BeanFieldGroup.bindFieldsUnbuffered(video, this);
+		cancel.setVisible(persisted);
 		setVisible(true);
 	}
 
@@ -93,4 +97,14 @@ public class VideoEditor extends VerticalLayout {
 		save.addClickListener(e -> h.onChange());
 		this.h = h;
 	}
+
+	public Chapter getChapter() {
+		return chapter;
+	}
+
+	public void setChapter(Chapter chapter) {
+		this.chapter = chapter;
+	}
+	
+	
 }
